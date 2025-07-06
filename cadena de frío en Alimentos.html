@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cadena de Frío: Quiz Frutas y Verduras</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #d0e0f0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .quiz-container {
+            background-image: url('https://www.transparenttextures.com/patterns/wave-in-the-water.png'), #65c4e8;
+            background-size: auto, cover;
+            border-radius: 20px;
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.2);
+            width: 100%;
+            max-width: 800px;
+            padding: 25px;
+            position: relative;
+            border: 4px solid #fff;
+        }
+
+        .frog-container {
+            position: absolute;
+            bottom: 5px;
+            left: 5%;
+            width: 100px;
+            z-index: 10;
+            animation: float 4s ease-in-out infinite;
+        }
+
+        .frog-container img {
+            width: 100%;
+        }
+        
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-15px); }
+            100% { transform: translateY(0px); }
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding: 10px 15px;
+            background-color: rgba(255, 255, 255, 0.7);
+            border-radius: 10px;
+            border: 1px solid #a0c0e0;
+        }
+
+        #question-count, #timer {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #0056b3;
+        }
+
+        #question-area {
+            background-color: rgba(255, 255, 255, 0.85);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 25px;
+            border: 2px solid #0077cc;
+            min-height: 100px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #question-text {
+            font-size: 1.5em;
+            color: #004080;
+            line-height: 1.4;
+        }
+
+        #options-area {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .option {
+            background-color: #f8f8ff;
+            border: 2px solid #cceeff;
+            border-radius: 15px;
+            padding: 15px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+        }
+
+        .option:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.12);
+        }
+
+        .option-letter {
+            background-color: #0099cc;
+            color: white;
+            font-size: 1.5em;
+            font-weight: bold;
+            border-radius: 10px;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-right: 15px;
+            flex-shrink: 0;
+        }
+
+        .option-text {
+            font-size: 1.1em;
+            color: #333;
+        }
+
+        .option.correct {
+            background-color: #d4edda;
+            border-color: #28a745;
+        }
+        .option.correct .option-letter { background-color: #28a745; }
+
+        .option.incorrect {
+            background-color: #f8d7da;
+            border-color: #dc3545;
+        }
+        .option.incorrect .option-letter { background-color: #dc3545; }
+
+        .option.disabled {
+            pointer-events: none;
+            opacity: 0.8;
+        }
+
+        #feedback-area {
+            margin-top: 15px;
+            font-size: 1.1em;
+            font-weight: bold;
+            min-height: 80px;
+            padding: 15px;
+            border-radius: 10px;
+            background-color: rgba(255, 255, 255, 0.7);
+            color: #333;
+            display: none;
+        }
+        
+        #feedback-image {
+            max-width: 150px;
+            border-radius: 8px;
+            margin-top: 10px;
+            border: 2px solid #fff;
+        }
+
+        .footer {
+            margin-top: 20px;
+            display: flex;
+            justify-content: center;
+        }
+
+        #next-button, #restart-button {
+            background-color: #1e90ff;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 1.1em;
+            transition: background-color 0.3s ease;
+        }
+        #next-button:hover, #restart-button:hover { background-color: #0077cc; }
+        
+        #restart-button { background-color: #ff7f50; }
+        #restart-button:hover { background-color: #e67347; }
+        
+        .loader {
+            width: 48px;
+            height: 48px;
+            border: 5px solid #fff;
+            border-bottom-color: transparent;
+            border-radius: 50%;
+            display: inline-block;
+            box-sizing: border-box;
+            animation: rotation 1s linear infinite;
+        }
+
+        @keyframes rotation {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="quiz-container">
+        <div class="frog-container">
+            <img src="https://i.imgur.com/sC22F2g.png" alt="Rana decorativa">
+        </div>
+        <div class="header">
+            <div id="question-count">Pregunta: 1/5</div>
+            <div id="timer">00:15</div>
+        </div>
+        <div id="question-area">
+            <div id="question-text"><div class="loader"></div></div>
+        </div>
+        <div id="options-area">
+        </div>
+        <div id="feedback-area">
+            <p id="feedback-text"></p>
+            <img id="feedback-image" src="" alt="Imagen de retroalimentación">
+        </div>
+        <div class="footer">
+            <button id="next-button" style="display: none;">Siguiente</button>
+            <button id="restart-button" style="display: none;">Reiniciar</button>
+        </div>
+    </div>
+
+<script>
+    const allQuestions = [
+        {
+            question: "¿Por qué la mayoría de las frutas se cosechan verdes o semimaduras?",
+            options: ["Para que pesen menos en el transporte.", "Para que tengan una vida útil más larga.", "Porque es más fácil para los agricultores."],
+            correctIndex: 1,
+            explanation: "Cosechar las frutas un poco antes de su madurez les permite resistir mejor el transporte y llegar en buen estado al consumidor.",
+            image_query: "frutas verdes"
+        },
+        {
+            question: "¿Cuál es el propósito principal del 'preenfriamiento' justo después de la cosecha?",
+            options: ["Limpiar la fruta de la tierra.", "Frenar el proceso de maduración y evitar bacterias.", "Añadir una capa de cera protectora."],
+            correctIndex: 1,
+            explanation: "El preenfriamiento rápido es crucial para detener la maduración y la actividad microbiana, preservando la frescura desde el inicio.",
+            image_query: "refrigeracion industrial"
+        },
+        {
+            question: "Si un aguacate madura de forma desigual (partes duras y partes blandas), es un signo de...",
+            options: ["Una variedad de aguacate exótica.", "Que le faltó sol.", "Una posible rotura en la cadena de frío."],
+            correctIndex: 2,
+            explanation: "Los cambios bruscos de temperatura rompen la cadena de frío y provocan una maduración incorrecta en frutas sensibles como el aguacate.",
+            image_query: "aguacate dañado"
+        },
+        {
+            question: "¿Qué es la cadena de frío en el contexto de los alimentos?",
+            options: ["Un tipo de supermercado especializado.", "Un sistema para congelar toda la comida.", "Un sistema de transporte y almacenamiento a temperatura controlada."],
+            correctIndex: 2,
+            explanation: "La cadena de frío es todo el proceso que mantiene una temperatura baja y constante desde la cosecha hasta el consumidor.",
+            image_query: "camion refrigerado"
+        },
+        {
+            question: "Para los productos perecederos, la refrigeración es...",
+            options: ["Una necesidad para preservar su calidad y frescura.", "Un lujo que solo se usa para exportación.", "Opcional si el viaje es corto."],
+            correctIndex: 0,
+            explanation: "La refrigeración no es un lujo, sino una necesidad fundamental para mantener los alimentos seguros y en buen estado.",
+            image_query: "frutas frescas"
+        },
+        {
+            question: "¿Quiénes son los profesionales clave para solucionar un fallo en un camión refrigerado?",
+            options: ["Los conductores del camión.", "Los técnicos especializados en refrigeración.", "Los empleados del supermercado."],
+            correctIndex: 1,
+            explanation: "Los técnicos especializados son esenciales para reparar los sistemas de refrigeración y evitar la pérdida de productos.",
+            image_query: "tecnico refrigeracion"
+        },
+        {
+            question: "Además de frenar la maduración, ¿qué evita el preenfriamiento?",
+            options: ["Que la fruta pierda su color.", "La proliferación de bacterias y hongos.", "Que la fruta se golpee."],
+            correctIndex: 1,
+            explanation: "Bajar la temperatura rápidamente inhibe el crecimiento de microorganismos que pueden estropear los productos.",
+            image_query: "hongo en fruta"
+        },
+        {
+            question: "Un plátano con manchas marrones pero con sabor a 'verde' indica un problema en...",
+            options: ["La variedad del plátano.", "El tipo de abono utilizado.", "La cadena de frío."],
+            correctIndex: 2,
+            explanation: "Este es un signo clásico de que el plátano sufrió cambios de temperatura que afectaron su proceso de maduración natural.",
+            image_query: "platano verde"
+        },
+        {
+            question: "¿Por qué no se cortan las frutas cuando ya están perfectamente maduras en el árbol?",
+            options: ["Porque son más difíciles de alcanzar.", "Porque tendrían solo unos pocos días para ser consumidas.", "Porque su sabor es menos intenso."],
+            correctIndex: 1,
+            explanation: "Si se cosecharan maduras, el tiempo de transporte y venta sería demasiado corto, y llegarían estropeadas al consumidor.",
+            image_query: "caja de frutas"
+        },
+        {
+            question: "El último responsable de mantener la cadena de frío antes de consumir el producto es...",
+            options: ["El agricultor.", "El transportista.", "El consumidor en su casa."],
+            correctIndex: 2,
+            explanation: "Una vez en casa, es fundamental que el consumidor siga las indicaciones de almacenamiento para preservar la frescura.",
+            image_query: "nevera con frutas"
+        }
+    ];
+
+    let currentQuestion = {};
+    let currentQuestionIndex = 0;
+    let score = 0;
+    let timerInterval;
+    let timeLeft = 15;
+    let gameQuestions = [];
+
+    const questionCountDisplay = document.getElementById('question-count');
+    const timerDisplay = document.getElementById('timer');
+    const questionTextEl = document.getElementById('question-text');
+    const optionsArea = document.getElementById('options-area');
+    const feedbackArea = document.getElementById('feedback-area');
+    const feedbackTextEl = document.getElementById('feedback-text');
+    const feedbackImageEl = document.getElementById('feedback-image');
+    const nextButton = document.getElementById('next-button');
+    const restartButton = document.getElementById('restart-button');
+
+    function shuffleArray(array) {
+        for (let i = array.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [array[i], array[j]] = [array[j], array[i]];
+        }
+    }
+
+    function setupGame() {
+        currentQuestionIndex = 0;
+        score = 0;
+        gameQuestions = [...allQuestions];
+        shuffleArray(gameQuestions);
+        gameQuestions = gameQuestions.slice(0, 5); // Select 5 random questions for the game
+        loadQuestion();
+    }
+
+    function startTimer() {
+        timeLeft = 15;
+        timerDisplay.textContent = `00:${timeLeft < 10 ? '0' : ''}${timeLeft}`;
+        clearInterval(timerInterval);
+        timerInterval = setInterval(() => {
+            timeLeft--;
+            timerDisplay.textContent = `00:${timeLeft < 10 ? '0' : ''}${timeLeft}`;
+            if (timeLeft <= 0) {
+                clearInterval(timerInterval);
+                handleOptionClick(null, true);
+            }
+        }, 1000);
+    }
+
+    function loadQuestion() {
+        if (currentQuestionIndex >= gameQuestions.length) {
+            endQuiz();
+            return;
+        }
+        setLoadingState(false);
+        currentQuestion = gameQuestions[currentQuestionIndex];
+        displayQuestion();
+        startTimer();
+    }
+
+    function displayQuestion() {
+        questionCountDisplay.textContent = `Pregunta: ${currentQuestionIndex + 1}/${gameQuestions.length}`;
+        questionTextEl.textContent = currentQuestion.question;
+        optionsArea.innerHTML = '';
+        if (currentQuestion.options) {
+            currentQuestion.options.forEach((option, index) => {
+                const optionDiv = document.createElement('div');
+                optionDiv.classList.add('option');
+                optionDiv.innerHTML = `<div class="option-letter">${String.fromCharCode(65 + index)}</div><div class="option-text">${option}</div>`;
+                optionDiv.addEventListener('click', (e) => handleOptionClick(e, false, index));
+                optionsArea.appendChild(optionDiv);
+            });
+        }
+        feedbackArea.style.display = 'none';
+        nextButton.style.display = 'none';
+        restartButton.style.display = 'none';
+    }
+
+    function handleOptionClick(e, isTimeout = false, selectedIndex = -1) {
+        clearInterval(timerInterval);
+        document.querySelectorAll('.option').forEach(opt => opt.classList.add('disabled'));
+
+        if (!currentQuestion || typeof currentQuestion.correctIndex === 'undefined') {
+            return; 
+        }
+
+        const correctIndex = currentQuestion.correctIndex;
+        let isCorrect = !isTimeout && selectedIndex === correctIndex;
+
+        if (isCorrect) {
+            score++;
+            feedbackTextEl.textContent = '¡Correcto!';
+            feedbackTextEl.style.color = '#28a745';
+            feedbackImageEl.src = `https://placehold.co/400x200/8bc34a/ffffff?text=${encodeURIComponent(currentQuestion.image_query)}`;
+            feedbackImageEl.style.display = 'block';
+        } else {
+            feedbackTextEl.style.color = '#dc3545';
+            feedbackImageEl.style.display = 'none';
+            if(isTimeout) {
+                feedbackTextEl.textContent = '¡Se acabó el tiempo!';
+            } else {
+                feedbackTextEl.textContent = `¡Incorrecto! ${currentQuestion.explanation}`;
+            }
+        }
+        
+        document.querySelectorAll('.option').forEach((opt, index) => {
+            if (index === correctIndex) opt.classList.add('correct');
+            else if (index === selectedIndex) opt.classList.add('incorrect');
+        });
+
+        feedbackArea.style.display = 'block';
+        if (currentQuestionIndex < gameQuestions.length - 1) {
+            nextButton.style.display = 'inline-block';
+        } else {
+            restartButton.style.display = 'inline-block';
+            restartButton.textContent = 'Ver Puntuación';
+        }
+    }
+
+    function endQuiz() {
+        clearInterval(timerInterval);
+        questionTextEl.textContent = `¡Juego Terminado! Tu puntuación final es: ${score} de ${gameQuestions.length}`;
+        optionsArea.innerHTML = '';
+        feedbackArea.style.display = 'none';
+        nextButton.style.display = 'none';
+        restartButton.style.display = 'inline-block';
+        restartButton.textContent = 'Reiniciar';
+    }
+    
+    function setLoadingState(isLoading) {
+        questionTextEl.innerHTML = isLoading ? '<div class="loader"></div>' : '';
+        optionsArea.innerHTML = '';
+    }
+
+    nextButton.addEventListener('click', () => {
+        currentQuestionIndex++;
+        loadQuestion();
+    });
+
+    restartButton.addEventListener('click', () => {
+        if (restartButton.textContent === 'Ver Puntuación') {
+            endQuiz();
+        } else {
+            setupGame();
+        }
+    });
+
+    setupGame();
+</script>
+
+</body>
+</html>
